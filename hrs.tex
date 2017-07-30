@@ -1,0 +1,95 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{vntex}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\begin{document}
+\chapter{Mô hình}
+\section{Biểu diễn hình thức} \label{PROB}
+Ta có các ký hiệu sau:
+\begin{itemize}
+\item Tập $U$ các người dùng, $\Vert U \Vert = n_U$
+\item Tập $P$ các POI, $\Vert P \Vert = n_P$
+\item Tập $Interest$ các sở thích, $\Vert Interest \Vert = n_{Interest}$
+\item Tập $W$ các từ vựng
+\item Tập $D$ các văn bản
+\end{itemize}
+Ta có các biểu diễn sau:
+\begin{itemize}
+\item Người dùng $u_i \in U$ biểu diễn bằng một vector các sở thích $\overrightarrow{intr_i} \in \mathbb{R}^{n_{Interest}}$
+\item Văn bản $d \in D$ biểu diễn bằng một vector $\overrightarrow{d} \in \mathbb{R}^{\Vert W \Vert}$
+\item Ma trận $M \in \mathbb{R}^{n_U \times n_P}, M_{ij}$ là số sao mà người dùng $i$ đánh giá cho phim $j$. $M_{ij}$ có thể xác định hoặc không xác định.
+\item Hàm $f(u, p)$ có giá trị là mức độ phù hợp của người dùng $u \in U$ đối với $p \in P$
+\end{itemize}
+Từ đó, ta có thể phát biểu bài toán như sau:\\\\
+\textbf{Bài toán:} Với $u \in U$ xác định và $M_{up}$ không xác định $\forall p \in P$, tìm $p_0 \in P$ sao cho $f(u, p_0) \geq f(u, p_i), \forall p_i \in P$ 
+
+\section{Hướng giải quyết}
+Để giải bài toán được nêu ở mục \ref{PROB}, ta sẽ phải định nghĩa hàm $f(u, p)$. Ta sẽ định nghĩa hàm $f(u, p)$ thông qua các $u_i$ sao cho độ tương đồng của $u$ đối với các $u_i$ đó là lớn nhất.
+\begin{equation} \label{f(u, p)}
+f(u,p) = g(Top\_Similar_k(u), p)
+\end{equation}
+\subsection{Hàm $Top\_Similar_k(u)$}
+Như đã nêu ở mục \ref{PROB}, với một $u_i$ bất kỳ, ta có vector $\overrightarrow{intr_i}$ tương ứng. Ta sẽ định nghĩa hàm $Similar(u_i, u_j)$ thông qua vector $\overrightarrow{intr_i}$ và $\overrightarrow{intr_j}$.
+\begin{equation} \label{Similar}
+	Similar(u_i, u_j) = cosine(\overrightarrow{intr_i}, \overrightarrow{intr_j})
+\end{equation}
+Và $Top\_Similar_k(u)$ được định nghĩa như sau:
+\begin{equation} \label{TopSimilar}
+	Top\_Similar_k(u) = \lbrace v \vert Similar(u, v)\ is\  max, \forall v \in U \rbrace
+\end{equation}
+Dễ thấy:
+\begin{equation}
+	Top\_Similar_k : U \longrightarrow U^k
+\end{equation}
+\subsection{Hàm $g(Top\_Similar_k(u), p)$}
+Ta định nghĩa hàm $g(Top\_Similar_k(u), p)$ như sau:
+\begin{equation} \label{g}
+g(Top\_Similar_k(u), p) = \lbrace p \ \vert \left(\sum_{u' \in Top\_Similar_k(u)}M_{u'p}\right) \ max, \forall p \in P \rbrace
+\end{equation}
+Như vậy, với công thức \ref{g}, ta đã giải quyết được bài toán đặt ra với giả sử là đã biết các vector $\overrightarrow{intr_i}$. Phần tiếp theo sẽ trình bày phương pháp tìm các vector $\overrightarrow{intr_i}$.
+
+\section{Mô hình sở thích người dùng}
+Trong phần này, ta sẽ trình bày mô hình để tính sở thích người dùng. Trước hết, ta cần phải định nghĩa một tập các sở thích của người dùng, chính là tập $Interest$ ở mục \ref{PROB}. Để định nghĩa được tập $Interest$, ta sẽ sử dụng LDA để chia tập các đánh giá của người dùng thành các topics. Tập các topics này sẽ là tập sở thích của người dùng(hay những vấn đề mà người dùng quan tâm).\\\\
+Khi sử dụng LDA, ta cần quan tâm đến các yếu tố sau:
+\begin{itemize}
+\item Số lượng các topics
+\item Tập từ vựng được dùng cho LDA
+\item Dữ liệu huấn luyện
+\end{itemize}
+\subsection{Xếp hạng sở thích người dùng}
+Sau bước LDA, ta có được một tập các topics và các đánh giá đã được tính ra score tương ứng với các topics đó. Ta có các ký hiệu sau:
+\begin{itemize}
+\item $T = \lbrace s_1, s_2, ..., s_n \rbrace$ là tập các topics
+\item Văn bản $d \in D$ được biểu diễn bằng:\\
+$\overrightarrow{d} = \left(s_1^{(d)}, s_2^{(d)}, ..., s_n^{(d)} \right) \in \mathbb{R}^n, n = \Vert T \Vert$
+\item Người dùng $u \in U$ có sở thích được biểu diễn bằng:\\ 
+$\overrightarrow{intr_u} = \left(s_1^{(u)}, s_2^{(u)}, ..., s_n^{(u)} \right) \in \mathbb{R}^n, n = \Vert T \Vert$
+\end{itemize}
+Các bài đánh giá của người dùng đều có thời gian ghi nhận. Giả sử vào thời điểm $t_k$, người dùng $u$ có sở thích là:
+\begin{equation}
+\left(\overrightarrow{intr_u}\right)_k = \left(s_{1k}^{(u)}, s_{2k}^{(u)}, ..., s_{nk}^{(u)} \right) \in \mathbb{R}^n, n = \Vert T \Vert
+\end{equation}
+Ta đưa ra cách tính sở thích của người dùng $u$ vào thời điểm $t_{k+1}$ với văn bản $\overrightarrow{d} = \left(s_1^{(d)}, s_2^{(d)}, ..., s_n^{(d)} \right) \in \mathbb{R}^n$ như sau:
+\begin{equation}
+\left(\overrightarrow{intr_u}\right)_{k+1} = \left(s_{1(k+1)}^{(u)}, s_{2(k+1)}^{(u)}, ..., s_{n(k+1)}^{(u)} \right) \in \mathbb{R}^n, n = \Vert T \Vert
+\end{equation}
+Với:
+\begin{equation}
+s_{i(k+1)}^{(u)} = s_i^{(d)} + s_{ik}^(u)e^{-\dfrac{(t_{k + 1} - t_k)^2}{2\sigma ^2}}, \forall i = \overline{1, n}
+\end{equation}
+Như vậy, với mô hình sở thích người dùng, ta đã giải quyết xong bài toán đưa ra. Phần tiếp theo sẽ trình bày các dữ liệu cần thiết cho mô hình và cách thu thập các dữ liệu đó.
+
+\chapter{Thu thập dữ liệu}
+Dữ liệu của mô hình được chia làm 2 loại, dữ liệu huấn luyện mô hình và dữ liệu để đánh giá mô hình đã huấn luyện.
+\section{Dữ liệu huấn luyện mô hình}
+Dữ liệu để huấn luyện mô hình sẽ được lấy từ tập yelp dataset tại địa chỉ \url{https://www.yelp.com/dataset_challenge}. Tập dữ liệu có các kiểu dữ liệu sau:
+\begin{itemize}
+\item Business: POI
+\item Review
+\item User
+\end{itemize}
+\end{document}
